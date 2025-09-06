@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LearnPath - Personalized Learning Path Generator</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    body { background: linear-gradient(135deg, #6e8efb, #a777e3); color: #333; min-height: 100vh; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+    .container { width: 100%; max-width: 900px; background: rgba(255, 255, 255, 0.95); border-radius: 20px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15); overflow: hidden; margin: 20px 0; }
+    header { background: linear-gradient(to right, #6e8efb, #a777e3); color: white; padding: 25px; text-align: center; }
+    h1 { font-size: 2.5rem; margin-bottom: 10px; }
+    .tagline { font-size: 1.1rem; opacity: 0.9; }
+    .main-content { padding: 30px; }
+    .input-section { margin-bottom: 30px; }
+    h2 { color: #6e8efb; margin-bottom: 15px; font-size: 1.8rem; }
+    .input-group { display: flex; gap: 10px; margin-bottom: 15px; }
+    input { flex: 1; padding: 15px; border: 2px solid #ddd; border-radius: 10px; font-size: 1rem; transition: border-color 0.3s; }
+    input:focus { border-color: #6e8efb; outline: none; }
+    button { background: #6e8efb; color: white; border: none; border-radius: 10px; padding: 15px 25px; cursor: pointer; font-size: 1rem; font-weight: 600; transition: background 0.3s, transform 0.2s; }
+    button:hover { background: #5a7df9; transform: translateY(-2px); }
+    button:active { transform: translateY(0); }
+    .examples { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
+    .example-chip { background: #f0f4ff; padding: 8px 15px; border-radius: 20px; font-size: 0.9rem; cursor: pointer; transition: background 0.3s; }
+    .example-chip:hover { background: #e0e8ff; }
+    .results-section { display: none; margin-top: 30px; }
+    .path-item { background: white; border-left: 5px solid #6e8efb; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05); }
+    .path-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+    .path-title { font-size: 1.3rem; font-weight: 600; color: #444; }
+    .path-duration { background: #f0f4ff; padding: 5px 12px; border-radius: 15px; font-size: 0.9rem; color: #6e8efb; }
+    .path-content { margin-bottom: 15px; line-height: 1.6; }
+    .resources { display: flex; flex-wrap: wrap; gap: 10px; }
+    .resource { background: #f8f9ff; padding: 8px 15px; border-radius: 6px; font-size: 0.9rem; color: #6e8efb; text-decoration: none; transition: background 0.3s; display: inline-block; }
+    .resource:hover { background: #e0e8ff; }
+    .loading { display: none; text-align: center; padding: 30px; flex-direction: column; align-items: center; }
+    .spinner { width: 50px; height: 50px; border: 5px solid #f0f4ff; border-top: 5px solid #6e8efb; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 20px; }
+    @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+    .error { display: none; background: #ffebee; color: #d32f2f; padding: 15px; border-radius: 10px; margin-top: 20px; text-align: center; }
+    .warning { display: none; background: #fff8e1; color: #ff8f00; padding: 15px; border-radius: 10px; margin-top: 20px; text-align: center; }
+    .success { display: none; background: #e8f5e9; color: #2e7d32; padding: 15px; border-radius: 10px; margin-top: 20px; text-align: center; }
+    .api-info { background: #f0f4ff; padding: 15px; border-radius: 10px; margin-bottom: 20px; text-align: center; }
+    .server-status { background: #e8f5e9; padding: 10px 15px; border-radius: 10px; margin-top: 20px; display: flex; align-items: center; gap: 10px; }
+    .status-indicator { width: 12px; height: 12px; border-radius: 50%; background: #4caf50; }
+    .status-offline { background: #f44336; }
+    .demo-mode { background: #fff8e1; color: #ff8f00; padding: 8px 15px; border-radius: 15px; font-size: 0.8rem; margin-left: 10px; }
+    .ai-mode { background: #e8f5e9; color: #2e7d32; padding: 8px 15px; border-radius: 15px; font-size: 0.8rem; margin-left: 10px; }
+    .info-box { background: #e3f2fd; padding: 15px; border-radius: 10px; margin: 20px 0; font-size: 0.9rem; }
+    footer { text-align: center; padding: 20px; color: rgba(255, 255, 255, 0.8); font-size: 0.9rem; margin-top: auto; }
+    @media (max-width: 768px) { .input-group { flex-direction: column; } input, button { width: 100%; } h1 { font-size: 2rem; } .server-status { flex-direction: column; align-items: flex-start; gap: 5px; } .demo-mode, .ai-mode { margin-left: 0; } }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>LearnPath</h1>
+      <p class="tagline">AI-Powered Personalized Learning Path Generator</p>
+    </header>
+
+    <div class="main-content">
+      <div class="api-info">
+        <p><i class="fas fa-server"></i> Server Connection Status</p>
+        <div class="server-status" id="server-status">
+          <div class="status-indicator" id="status-indicator"></div>
+          <span id="status-text">Checking server status...</span>
+          <span class="demo-mode" id="demo-mode-indicator" style="display: none;">Demo Mode</span>
+          <span class="ai-mode" id="ai-mode-indicator" style="display: none;">AI Powered</span>
+        </div>
+      </div>
+
+      <div class="info-box">
+        <p><i class="fas fa-info-circle"></i> Enter the skills you want to learn, and we'll generate a personalized learning path with resources and timelines.</p>
+      </div>
+
+      <div class="input-section">
+        <h2>What skills would you like to develop?</h2>
+        <div class="input-group">
+          <input type="text" id="skills-input" placeholder="e.g., Python, Data Analysis, Machine Learning">
+          <button id="generate-btn">Generate Path</button>
+        </div>
+        <p>Try one of these examples:</p>
+        <div class="examples">
+          <div class="example-chip">Web Development</div>
+          <div class="example-chip">Data Science</div>
+          <div class="example-chip">Digital Marketing</div>
+          <div class="example-chip">UX Design</div>
+        </div>
+      </div>
+
+      <div class="loading" id="loading">
+        <div class="spinner"></div>
+        <p>Generating your personalized learning path...</p>
+        <p id="loading-details" style="font-size: 0.9rem; margin-top: 10px; color: #666;"></p>
+      </div>
+
+      <div class="error" id="error-message">
+        <i class="fas fa-exclamation-circle"></i>
+        <p id="error-text">There was an error generating your learning path. Please try again.</p>
+      </div>
+
+      <div class="warning" id="warning-message">
+        <i class="fas fa-exclamation-triangle"></i>
+        <p>Running in demo mode. Add your Gemini API key to enable AI-powered recommendations.</p>
+      </div>
+
+      <div class="success" id="success-message">
+        <i class="fas fa-check-circle"></i>
+        <p>AI-powered learning path generated successfully!</p>
+      </div>
+
+      <div class="results-section" id="results">
+        <h2>Your Personalized Learning Path</h2>
+        <div id="path-container"></div>
+      </div>
+    </div>
+  </div>
+
+  <footer>
+    <p>Powered by Gemini AI • LearnPath © 2023</p>
+  </footer>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const skillsInput = document.getElementById('skills-input');
+      const generateBtn = document.getElementById('generate-btn');
+      const examples = document.querySelectorAll('.example-chip');
+      const loadingElement = document.getElementById('loading');
+      const loadingDetails = document.getElementById('loading-details');
+      const errorElement = document.getElementById('error-message');
+      const errorText = document.getElementById('error-text');
+      const warningElement = document.getElementById('warning-message');
+      const successElement = document.getElementById('success-message');
+      const resultsSection = document.getElementById('results');
+      const pathContainer = document.getElementById('path-container');
+      const statusIndicator = document.getElementById('status-indicator');
+      const statusText = document.getElementById('status-text');
+      const demoModeIndicator = document.getElementById('demo-mode-indicator');
+      const aiModeIndicator = document.getElementById('ai-mode-indicator');
+
+      let isDemoMode = false;
+
+      checkServerStatus();
+
+      examples.forEach(example => {
+        example.addEventListener('click', () => {
+          skillsInput.value = example.textContent;
+        });
+      });
+
+      generateBtn.addEventListener('click', generateLearningPath);
+      skillsInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') generateLearningPath();
+      });
+
+      async function checkServerStatus() {
+        try {
+          loadingDetails.textContent = 'Checking server connection...';
+          const response = await fetch('/api/health');
+          if (response.ok) {
+            const data = await response.json();
+            statusIndicator.classList.remove('status-offline');
+            if (data.hasApiKey) {
+              statusText.textContent = 'Server is online (AI Powered)';
+              aiModeIndicator.style.display = 'inline-block';
+              demoModeIndicator.style.display = 'none';
+              warningElement.style.display = 'none';
+              isDemoMode = false;
+            } else {
+              statusText.textContent = 'Server is online (Demo Mode)';
+              demoModeIndicator.style.display = 'inline-block';
+              aiModeIndicator.style.display = 'none';
+              warningElement.style.display = 'block';
+              isDemoMode = true;
+            }
+          } else {
+            throw new Error('Server not responding');
+          }
+        } catch {
+          statusIndicator.classList.add('status-offline');
+          statusText.textContent = 'Server offline - using demo mode';
+          demoModeIndicator.style.display = 'inline-block';
+          aiModeIndicator.style.display = 'none';
+          warningElement.style.display = 'block';
+          isDemoMode = true;
+        } finally {
+          loadingDetails.textContent = '';
+        }
+      }
+
+      async function generateLearningPath() {
+        const skills = skillsInput.value.trim();
+        if (!skills) {
+          alert('Please enter a skill to learn');
+          return;
+        }
+
+        errorElement.style.display = 'none';
+        warningElement.style.display = 'none';
+        successElement.style.display = 'none';
+        resultsSection.style.display = 'none';
+        loadingElement.style.display = 'flex';
+        loadingDetails.textContent = 'Generating learning path...';
+
+        try {
+          const response = await fetch('/api/generate-path', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ skills })
+          });
+
+          const data = await response.json();
+          loadingElement.style.display = 'none';
+
+          if (data.success) {
+            pathContainer.innerHTML = '';
+            data.data.forEach(item => {
+              const pathItem = document.createElement('div');
+              pathItem.className = 'path-item';
+              pathItem.innerHTML = `
+                <div class="path-header">
+                  <div class="path-title">${item.title}</div>
+                  <div class="path-duration">${item.duration}</div>
+                </div>
+                <div class="path-content">${item.description}</div>
+                <div class="resources">
+                  ${item.resources.map(r => 
+                    `<a class="resource" href="${r.url}" target="_blank">${r.name}</a>`
+                  ).join('')}
+                </div>
+              `;
+              pathContainer.appendChild(pathItem);
+            });
+            resultsSection.style.display = 'block';
+
+            if (data.mode === 'mock') {
+              warningElement.style.display = 'block';
+              successElement.style.display = 'none';
+            } else if (data.mode === 'ai') {
+              successElement.style.display = 'block';
+              warningElement.style.display = 'none';
+            }
+          } else {
+            errorText.textContent = data.error || 'Failed to generate learning path';
+            errorElement.style.display = 'block';
+          }
+        } catch {
+          loadingElement.style.display = 'none';
+          errorText.textContent = 'Server error - please try again later';
+          errorElement.style.display = 'block';
+        }
+      }
+    });
+  </script>
+</body>
+</html>
