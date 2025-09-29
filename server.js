@@ -23,7 +23,7 @@ let model = null;
 try {
   if (process.env.GEMINI_API_KEY) {
     genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    // Changed from "gemini-1.5-flash" to "gemini-pro" for India availability
+    // ✅ CORRECT: "gemini-pro" with hyphen
     model = genAI.getGenerativeModel({ model: "gemini-pro" });
     console.log("✅ Gemini AI model initialized.");
   } else {
