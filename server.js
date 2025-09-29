@@ -23,7 +23,8 @@ let model = null;
 try {
   if (process.env.GEMINI_API_KEY) {
     genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+    // Changed from "gemini-1.5-flash" to "gemini-pro" for India availability
+    model = genAI.getGenerativeModel({ model: "gemini-pro" });
     console.log("✅ Gemini AI model initialized.");
   } else {
     console.warn("⚠️ No GEMINI_API_KEY found, running in demo mode.");
